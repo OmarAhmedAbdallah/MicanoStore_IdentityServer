@@ -8,7 +8,7 @@ This solution provides a centralized Identity Server for microservices authentic
 ## Setup
 
 ### Prerequisites
-- .NET 7.0 SDK
+- .NET 8.0 SDK
 - SQL Server (LocalDB or full installation)
 
 ### Getting Started
