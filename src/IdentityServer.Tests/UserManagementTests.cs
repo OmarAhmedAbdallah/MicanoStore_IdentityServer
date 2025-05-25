@@ -1,10 +1,10 @@
-using Xunit;
+using IdentityServer.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SharedLibrary.Models;
-using IdentityServer.Data;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace IdentityServer.Tests
 {
