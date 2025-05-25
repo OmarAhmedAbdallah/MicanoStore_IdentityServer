@@ -13,7 +13,7 @@ namespace IdentityServer.Data;
 /// 
 /// This replaces the in-memory configuration from Config.cs with database persistence.
 /// </summary>
-public class ApplicationConfigurationDbContext : ConfigurationDbContext<ApplicationConfigurationDbContext>
+public class ConfigurationDbContext : ConfigurationDbContext<ConfigurationDbContext>
 {
     /// <summary>
     /// Constructor that takes DbContextOptions.
@@ -21,8 +21,8 @@ public class ApplicationConfigurationDbContext : ConfigurationDbContext<Applicat
     /// and relationships for storing IdentityServer configuration.
     /// </summary>
     /// <param name="options">Database context options including connection string</param>
-    public ApplicationConfigurationDbContext(
-        DbContextOptions<ApplicationConfigurationDbContext> options)
+    public ConfigurationDbContext(
+        DbContextOptions<ConfigurationDbContext> options)
         : base(options)
     {
     }

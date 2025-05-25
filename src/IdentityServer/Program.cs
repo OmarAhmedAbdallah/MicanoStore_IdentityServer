@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using SharedLibrary.Models;
 using Duende.IdentityServer.EntityFramework.DbContexts;
 using Duende.IdentityServer.EntityFramework.Mappers;
+using ConfigurationDbContext = IdentityServer.Data.ConfigurationDbContext;
+using PersistedGrantDbContext = IdentityServer.Data.PersistedGrantDbContext;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,13 +38,13 @@ builder.Services.AddIdentityServer(options =>
         options.Events.RaiseSuccessEvents = true;
     })
     // Add the configuration store (clients, resources, scopes)
-    .AddConfigurationStore<ApplicationConfigurationDbContext>(options =>
+    .AddConfigurationStore<ConfigurationDbContext>(options =>
     {
         options.ConfigureDbContext = b => 
             b.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
     })
     // Add the operational store (tokens, codes, consents)
-    .AddOperationalStore<ApplicationPersistedGrantDbContext>(options =>
+    .AddOperationalStore<PersistedGrantDbContext>(options =>
     {
         options.ConfigureDbContext = b => 
             b.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
@@ -87,11 +89,11 @@ using (var scope = app.Services.CreateScope())
     context.Database.Migrate();
 
     // Migrate the IdentityServer configuration database
-    var configContext = scope.ServiceProvider.GetRequiredService<ApplicationConfigurationDbContext>();
+    var configContext = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
     configContext.Database.Migrate();
 
     // Migrate the IdentityServer operational data database
-    var persistedGrantContext = scope.ServiceProvider.GetRequiredService<ApplicationPersistedGrantDbContext>();
+    var persistedGrantContext = scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>();
     persistedGrantContext.Database.Migrate();
 
     // Seed the configuration database with initial data if empty

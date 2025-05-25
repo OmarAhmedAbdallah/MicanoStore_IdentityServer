@@ -13,7 +13,7 @@ namespace IdentityServer.Data;
 /// This data is dynamic and created during runtime operations.
 /// It's crucial for maintaining user sessions and token management.
 /// </summary>
-public class ApplicationPersistedGrantDbContext : PersistedGrantDbContext<ApplicationPersistedGrantDbContext>
+public class PersistedGrantDbContext : PersistedGrantDbContext<PersistedGrantDbContext>
 {
     /// <summary>
     /// Constructor that takes DbContextOptions.
@@ -21,8 +21,8 @@ public class ApplicationPersistedGrantDbContext : PersistedGrantDbContext<Applic
     /// and relationships for storing runtime operational data.
     /// </summary>
     /// <param name="options">Database context options including connection string</param>
-    public ApplicationPersistedGrantDbContext(
-        DbContextOptions<ApplicationPersistedGrantDbContext> options)
+    public PersistedGrantDbContext(
+        DbContextOptions<PersistedGrantDbContext> options)
         : base(options)
     {
     }
