@@ -11,7 +11,7 @@ using PersistedGrantDbContext = IdentityServer.Data.PersistedGrantDbContext;
 var builder = WebApplication.CreateBuilder(args);
 
 // Database connection string for all our contexts (Identity, Configuration, and PersistedGrants)
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
     "Server=(localdb)\\mssqllocaldb;Database=IdentityServer;Trusted_Connection=True;MultipleActiveResultSets=true";
 
 // Store the assembly name for migrations (used by both configuration stores)
@@ -40,15 +40,15 @@ builder.Services.AddIdentityServer(options =>
     // Add the configuration store (clients, resources, scopes)
     .AddConfigurationStore<ConfigurationDbContext>(options =>
     {
-        options.ConfigureDbContext = b => 
+        options.ConfigureDbContext = b =>
             b.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
     })
     // Add the operational store (tokens, codes, consents)
     .AddOperationalStore<PersistedGrantDbContext>(options =>
     {
-        options.ConfigureDbContext = b => 
+        options.ConfigureDbContext = b =>
             b.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationsAssembly));
-        
+
         // Enable automatic cleanup of expired tokens and grants
         options.EnableTokenCleanup = true;
         options.TokenCleanupInterval = 3600; // cleanup every hour
@@ -86,15 +86,22 @@ using (var scope = app.Services.CreateScope())
 {
     // Migrate the ASP.NET Core Identity database
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    context.Database.Migrate();
 
     // Migrate the IdentityServer configuration database
     var configContext = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
-    configContext.Database.Migrate();
 
     // Migrate the IdentityServer operational data database
     var persistedGrantContext = scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>();
-    persistedGrantContext.Database.Migrate();
+
+    // Check if the --migrate flag is provided in the command line arguments in launchSettings.json
+    var shouldMigrate = args.Length > 0 && args[0] == "--migrate";
+
+    // If the --migrate flag is provided, migrate the databases
+    if (shouldMigrate){
+        context.Database.Migrate();
+        configContext.Database.Migrate();
+        persistedGrantContext.Database.Migrate();
+    }
 
     // Seed the configuration database with initial data if empty
     if (!configContext.Clients.Any())
@@ -125,4 +132,4 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.Run(); 
+app.Run();
