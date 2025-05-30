@@ -1,0 +1,6 @@
+@UserInteraction_HostAddress = http://localhost:5218
+
+GET {{UserInteraction_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
