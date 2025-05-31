@@ -71,7 +71,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.Authority = builder.Configuration["IdentityServer:Authority"];
     options.RequireHttpsMetadata = false;
-    options.Audience = "userinteraction";
+    options.Audience = builder.Configuration["IdentityServer:Audience"];
     options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
     {
         ValidateAudience = true,
