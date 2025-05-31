@@ -20,7 +20,16 @@ public static class BookmarkEndpoints
             ISender mediator,
             ClaimsPrincipal user) =>
         {
-            command = command with { UserId = user.FindFirst("sub")?.Value! };
+             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+                ?? user.FindFirst("sub")?.Value 
+                ?? user.FindFirst("userId")?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Results.Unauthorized();
+            }
+
+            command = command with { UserId = userId };
             var result = await mediator.Send(command);
             
             return !result.Success 
@@ -35,7 +44,16 @@ public static class BookmarkEndpoints
             ISender mediator,
             ClaimsPrincipal user) =>
         {
-            var command = new RemoveBookmarkCommand(user.FindFirst("sub")?.Value!, itemId);
+             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+                ?? user.FindFirst("sub")?.Value 
+                ?? user.FindFirst("userId")?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Results.Unauthorized();
+            }
+
+            var command = new RemoveBookmarkCommand(userId, itemId);
             var result = await mediator.Send(command);
             
             return !result.Success 

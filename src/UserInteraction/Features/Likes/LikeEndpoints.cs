@@ -19,7 +19,16 @@ public static class LikeEndpoints
             ISender mediator,
             ClaimsPrincipal user) =>
         {
-            var command = new ToggleLikeCommand(user.FindFirst("sub")?.Value!, itemId);
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+                ?? user.FindFirst("sub")?.Value 
+                ?? user.FindFirst("userId")?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Results.Unauthorized();
+            }
+
+            var command = new ToggleLikeCommand(userId, itemId);
             var result = await mediator.Send(command);
             
             return !result.Success 

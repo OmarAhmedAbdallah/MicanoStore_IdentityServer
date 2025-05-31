@@ -13,10 +13,20 @@ public static class Config
             new IdentityResources.Email()
         };
 
+    public static IEnumerable<ApiResource> ApiResources =>
+        new List<ApiResource>
+        {
+            new ApiResource("userinteraction", "User Interaction API")
+            {
+                Scopes = { "userinteraction" }
+            }
+        };
+
     public static IEnumerable<ApiScope> ApiScopes =>
         new List<ApiScope>
         {
-            new ApiScope("api1", "My API")
+            new ApiScope("api1", "My API"),
+            new ApiScope("userinteraction", "User Interaction API")
         };
 
     public static IEnumerable<Client> Clients =>
@@ -47,6 +57,34 @@ public static class Config
                     IdentityServerConstants.StandardScopes.Email,
                     "api1"
                 }
+            },
+
+            // UserInteraction Service Client
+            new Client
+            {
+                ClientId = "userinteraction",
+                ClientName = "User Interaction Service",
+                ClientSecrets = { new Secret("userinteraction-secret".Sha256()) },
+                AllowedGrantTypes = GrantTypes.Code,
+                RequirePkce = true,
+                
+                RedirectUris = { 
+                    "https://localhost:5003/signin-oidc",
+                    "https://localhost:5003/swagger/oauth2-redirect.html"  // For Swagger UI
+                },
+                PostLogoutRedirectUris = { "https://localhost:5003/signout-callback-oidc" },
+                
+                AllowOfflineAccess = true,
+                AllowedScopes = new List<string>
+                {
+                    IdentityServerConstants.StandardScopes.OpenId,
+                    IdentityServerConstants.StandardScopes.Profile,
+                    IdentityServerConstants.StandardScopes.Email,
+                    "userinteraction"
+                },
+                
+                RequireConsent = false,
+                AllowedCorsOrigins = { "https://localhost:5003" }
             }
         };
 } 

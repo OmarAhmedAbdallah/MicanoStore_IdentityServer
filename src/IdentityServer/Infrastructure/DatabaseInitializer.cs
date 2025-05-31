@@ -1,64 +1,65 @@
 using IdentityServer.Data;
-using Duende.IdentityServer.EntityFramework.Mappers;
+using IdentityServer.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace IdentityServer.Infrastructure;
 
 public class DatabaseInitializer
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly ApplicationDbContext _context;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly ILogger<DatabaseInitializer> _logger;
 
-    public DatabaseInitializer(IServiceProvider serviceProvider)
+    public DatabaseInitializer(
+        ApplicationDbContext context,
+        UserManager<ApplicationUser> userManager,
+        RoleManager<IdentityRole> roleManager,
+        ILogger<DatabaseInitializer> logger)
     {
-        _serviceProvider = serviceProvider;
+        _context = context;
+        _userManager = userManager;
+        _roleManager = roleManager;
+        _logger = logger;
     }
 
-    public async Task InitializeDatabasesAsync(bool shouldMigrate)
+    public async Task InitializeDatabasesAsync(bool shouldMigrate = false)
     {
-        using var scope = _serviceProvider.CreateScope();
-        
-        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var configContext = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
-        var persistedGrantContext = scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>();
-
-        if (shouldMigrate)
+        try
         {
-            await context.Database.MigrateAsync();
-            await configContext.Database.MigrateAsync();
-            await persistedGrantContext.Database.MigrateAsync();
-        }
-
-        await SeedConfigurationDataAsync(configContext);
-    }
-
-    private async Task SeedConfigurationDataAsync(ConfigurationDbContext context)
-    {
-        if (!context.Clients.Any())
-        {
-            foreach (var client in Config.Clients)
+            if (shouldMigrate)
             {
-                context.Clients.Add(client.ToEntity());
+                await _context.Database.MigrateAsync();
             }
-            await context.SaveChangesAsync();
-        }
-
-        if (!context.IdentityResources.Any())
-        {
-            foreach (var resource in Config.IdentityResources)
+            
+            // Seed default user
+            if (!_context.Users.Any())
             {
-                context.IdentityResources.Add(resource.ToEntity());
-            }
-            await context.SaveChangesAsync();
-        }
+                var user = new ApplicationUser
+                {
+                    UserName = "admin@example.com",
+                    Email = "admin@example.com",
+                    EmailConfirmed = true,
+                    FirstName = "Admin",
+                    LastName = "User"
+                };
 
-        if (!context.ApiScopes.Any())
-        {
-            foreach (var apiScope in Config.ApiScopes)
-            {
-                context.ApiScopes.Add(apiScope.ToEntity());
+                var result = await _userManager.CreateAsync(user, "Admin123!");
+                if (!result.Succeeded)
+                {
+                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                    throw new Exception($"Failed to create default user: {errors}");
+                }
+
+                _logger.LogInformation("Created default admin user");
             }
-            await context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while initializing the database");
+            throw;
         }
     }
 } 
